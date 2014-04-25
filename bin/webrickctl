@@ -1,0 +1,99 @@
+#!/usr/bin/env ruby
+###############################################
+# webrickctl
+#
+# Control script for the Webrick Service.
+###############################################
+require 'rbconfig'
+require 'getopt/long'
+require 'win32/service'
+require 'win32/dir'
+include Win32
+include RbConfig
+include Getopt
+
+opts = Getopt::Long.getopts(
+   ["--install",   "-i"],
+   ["--delete",    "-d"],
+   ["--start",     "-s"],
+   ["--stop",      "-x"],
+   ["--home",      "-m", REQUIRED],
+   ["--path",      "-p", REQUIRED],
+   ["--help",      "-h"]
+)
+
+# Help
+if opts['help']
+   def_home = File.join(Dir::PROGRAM_FILESX86, 'RubyServices', 'RubyGems').tr("/", "\\")
+   def_path = File.join(CONFIG['bindir'], 'ruby').tr("/", "\\")
+   
+help = <<HELP
+
+   Usage: webrickctl [-i, -d, -s, -x, -m <home>, -p <path>]"
+
+   -i, --install => Install the service
+   -d, --delete  => Delete the service
+   -s, --start   => Start the service
+   -x, --stop    => Stop the service
+   -m, --home    => Set the home directory. Defaults to #{def_home}
+   -p, --path    => Path to Ruby executable. Defaults to #{def_path}
+HELP
+   puts help
+   exit
+end
+
+home = opts["--home"] || File.join(Dir::PROGRAM_FILESX86, 'RubyServices', 'WEBrick').tr("/", "\\")
+path = opts["--path"] || File.join(CONFIG['bindir'], 'ruby').tr("/", "\\")
+prog = path + ' "' + home + '/webrick_http_daemon.rb' + '"'
+prog.tr!("/", "\\")
+
+service_name = 'WebrickSvc'
+display_name = 'Webrick'
+
+# Install the service
+if opts["install"]  
+   svc = Service.new(
+      :service_name     => service_name,
+      :display_name     => display_name,
+      :binary_path_name => prog,
+      :description      => 'A WEBrick HTTP server'
+   )
+   puts "#{display_name} service installed"
+end
+
+# Start the service
+if opts["start"]
+   Service.start(service_name)
+   started = false
+   while started == false
+      s = Service.status(service_name)
+      started = true if s.current_state == "running"
+      break if started == true
+      puts "One moment, " + s.current_state
+      sleep 1
+   end
+   puts "#{display_name} service started"
+end
+
+# Stop the service
+if opts["stop"]
+   Service.stop(service_name)
+   stopped = false
+   while stopped == false
+      s = Service.status(service_name)
+      stopped = true if s.current_state == "stopped"
+      break if stopped == true
+      puts "One moment, " + s.current_state
+      sleep 1
+   end
+   puts "#{display_name} service stopped"
+end
+
+# Delete the service.  Stop it first.
+if opts["delete"]
+   Service.stop(service_name) rescue nil
+   Service.delete(service_name)
+   puts "#{display_name} service deleted"
+end
+
+# END webrickctl.rb
