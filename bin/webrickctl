@@ -52,48 +52,48 @@ display_name = 'Webrick'
 
 # Install the service
 if opts["install"]  
-   svc = Service.new(
-      :service_name     => service_name,
-      :display_name     => display_name,
-      :binary_path_name => prog,
-      :description      => 'A WEBrick HTTP server'
-   )
-   puts "#{display_name} service installed"
+  svc = Service.new(
+    :service_name     => service_name,
+    :display_name     => display_name,
+    :binary_path_name => prog,
+    :description      => 'A WEBrick HTTP server'
+  )
+  puts "#{display_name} service installed"
 end
 
 # Start the service
 if opts["start"]
-   Service.start(service_name)
-   started = false
-   while started == false
-      s = Service.status(service_name)
-      started = true if s.current_state == "running"
-      break if started == true
-      puts "One moment, " + s.current_state
-      sleep 1
-   end
-   puts "#{display_name} service started"
+  Service.start(service_name)
+  started = false
+  while started == false
+    s = Service.status(service_name)
+    started = true if s.current_state == "running"
+    break if started == true
+    puts "Starting WEBrick service, one moment: " + s.current_state
+    sleep 1
+  end
+  puts "#{display_name} service started"
 end
 
 # Stop the service
 if opts["stop"]
-   Service.stop(service_name)
-   stopped = false
-   while stopped == false
-      s = Service.status(service_name)
-      stopped = true if s.current_state == "stopped"
-      break if stopped == true
-      puts "One moment, " + s.current_state
-      sleep 1
-   end
-   puts "#{display_name} service stopped"
+  Service.stop(service_name)
+  stopped = false
+  while stopped == false
+    s = Service.status(service_name)
+    stopped = true if s.current_state == "stopped"
+    break if stopped == true
+    puts "Stopping WEBrick service, one moment: " + s.current_state
+    sleep 1
+  end
+  puts "#{display_name} service stopped"
 end
 
 # Delete the service.  Stop it first.
 if opts["delete"]
-   Service.stop(service_name) rescue nil
-   Service.delete(service_name)
-   puts "#{display_name} service deleted"
+  Service.stop(service_name) rescue nil
+  Service.delete(service_name)
+  puts "#{display_name} service deleted"
 end
 
 # END webrickctl.rb
