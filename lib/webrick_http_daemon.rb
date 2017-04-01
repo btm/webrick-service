@@ -13,6 +13,9 @@ begin
   LOG = File.join(Dir::PROGRAM_FILESX86, 'RubyServices', 'WEBrick', 'http_service.log').tr("/", "\\")
 
   class WebrickHttpDaemon < Daemon
+    # The version of the webrick-service gem
+    VERSION = '0.1.0'.freeze
+
     def initialize
       Dir.chdir(File.join(Dir::PROGRAM_FILESX86, 'RubyServices', 'WEBrick'))
 
@@ -51,10 +54,10 @@ begin
 
   WebrickHttpDaemon.new.mainloop
 rescue Exception => err
-  File.open(LOG, 'a'){ |fh|
+  File.open(LOG, 'a') do |fh|
     fh.puts err
     fh.puts err.backtrace.join("\n")
     fh.puts "=" * 40
-  }
+  end
   raise
 end
